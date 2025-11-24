@@ -23,6 +23,12 @@ async def dynamic_param(dynamic_param: str):
     return {"dynamic_param": dynamic_param}
 
 
+# Query parameters
+@app.get("/params/")
+async def query_param(query_param: str):
+    return {"query_param": query_param}
+
+
 @app.get("/books")
 async def get_books():
     return BOOKS
@@ -33,3 +39,24 @@ async def get_book(book_title: str):
     for book in BOOKS:
         if book.get("title").casefold() == book_title.casefold():
             return book
+
+
+@app.get("/books_by_category")
+async def get_books_by_category(category: str):
+    result = []
+    for book in BOOKS:
+        if book.get("category").casefold() == category.casefold():
+            result.append(book)
+    return result
+
+
+@app.get("/books_by_author_and_category/{category}")
+async def get_books_by_author_and_category(author: str, category: str):
+    result = []
+    for book in BOOKS:
+        if (
+            book.get("author").casefold() == author.casefold()
+            and book.get("category").casefold() == category.casefold()
+        ):
+            result.append(book)
+    return result

@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Body
 
 app = FastAPI()
 
@@ -60,3 +60,8 @@ async def get_books_by_author_and_category(author: str, category: str):
         ):
             result.append(book)
     return result
+
+
+@app.post("/books")
+async def create(new_book=Body()):
+    BOOKS.append(new_book)

@@ -52,6 +52,22 @@ def get_books():
     return BOOKS
 
 
+@app.get("/books/{book_id}")
+def get_book(book_id: int):
+    for book in BOOKS:
+        if book.id == book_id:
+            return book
+
+
+@app.get("/books/")
+def get_books_by_rating(rating: int):
+    result = []
+    for book in BOOKS:
+        if book.rating == rating:
+            result.append(book)
+    return result
+
+
 # @app.post("/books")
 # def create_book(book_request=Body()):
 #     BOOKS.append(book_request)
@@ -62,6 +78,22 @@ def create_book(book_request: BookRequest):
     new_book = Book(**book_request.dict())
     new_book.id = generate_book_id()
     BOOKS.append(new_book)
+
+
+@app.put("/books")
+def update_book(book_request: BookRequest):
+    for i in range(len(BOOKS)):
+        if BOOKS[i].id == book_request.id:
+            BOOKS[i] = Book(**book_request.dict())
+            break
+
+
+@app.delete("/books/{book_id}")
+def delete_book(book_id: int):
+    for i in range(len(BOOKS)):
+        if BOOKS[i].id == book_id:
+            BOOKS.pop(i)
+            break
 
 
 def generate_book_id():

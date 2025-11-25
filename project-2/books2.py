@@ -1,5 +1,6 @@
+from typing import Optional
 from fastapi import FastAPI
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 app = FastAPI()
 
@@ -18,10 +19,10 @@ class Book:
 
 
 class BookRequest(BaseModel):
-    id: int
-    title: str
-    author: str
-    rating: int
+    id: Optional[int] = None
+    title: str = Field(min_length=3)
+    author: str = Field(min_lengt=3, max_length=20)
+    rating: int = Field(gt=-1, lt=6)
 
 
 BOOKS = [
@@ -46,4 +47,9 @@ def get_books():
 @app.post("/books")
 def create_book(book_request: BookRequest):
     new_book = Book(**book_request.dict())
+    new_book.id = generate_book_id()
     BOOKS.append(new_book)
+
+
+def generate_book_id():
+    return BOOKS[-1].id + 1 if BOOKS else 1

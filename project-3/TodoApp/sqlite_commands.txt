@@ -1,0 +1,11 @@
+sqlite3 ./todos.db
+
+INSERT INTO todos (title, description, priority, complete) VALUES ("Go to store", "To pick up eggs", 4, false);
+INSERT INTO todos (title, description, priority, complete) VALUES ("Haircut", "Need to get length 1mm", 3, false);
+INSERT INTO todos (title, description, priority, complete) VALUES ("Feed dog", "Make sure to use new food brand", 5, false);
+INSERT INTO todos (title, description, priority, complete) VALUES ("Water plant", "Inside and outside plants", 4, false);
+INSERT INTO todos (title, description, priority, complete) VALUES ("Learn something new", "Learn to program", 5, false);
+UPDATE todos SET complete=true WHERE id=5;
+SELECT * FROM todos;
+
+.quit

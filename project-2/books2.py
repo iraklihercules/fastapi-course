@@ -10,12 +10,16 @@ class Book:
     title: str
     author: str
     rating: int
+    published_at: int
 
-    def __init__(self, id: int, title: str, author: str, rating: int):
+    def __init__(
+        self, id: int, title: str, author: str, rating: int, published_at: int
+    ):
         self.id = id
         self.title = title
         self.author = author
         self.rating = rating
+        self.published_at = published_at
 
 
 class BookRequest(BaseModel):
@@ -26,6 +30,7 @@ class BookRequest(BaseModel):
     title: str = Field(min_length=3)
     author: str = Field(min_lengt=3, max_length=20)
     rating: int = Field(gt=-1, lt=6)
+    published_at: int = Field(gt=1900, lt=2026)
 
     model_config = {
         "json_schema_extra": {
@@ -33,17 +38,18 @@ class BookRequest(BaseModel):
                 "title": "New book",
                 "author": "New author",
                 "rating": 5,
+                "published_at": 2020,
             }
         }
     }
 
 
 BOOKS = [
-    Book(1, "Book 1", "Author 1", 5),
-    Book(2, "Book 2", "Author 1", 4),
-    Book(3, "Book 3", "Author 2", 3),
-    Book(4, "Book 4", "Author 2", 2),
-    Book(5, "Book 5", "Author 3", 5),
+    Book(1, "Book 1", "Author 1", 5, 1985),
+    Book(2, "Book 2", "Author 1", 4, 1998),
+    Book(3, "Book 3", "Author 2", 3, 2015),
+    Book(4, "Book 4", "Author 2", 2, 2017),
+    Book(5, "Book 5", "Author 3", 5, 2022),
 ]
 
 
@@ -59,11 +65,20 @@ def get_book(book_id: int):
             return book
 
 
-@app.get("/books/")
+@app.get("/books-by-rating")
 def get_books_by_rating(rating: int):
     result = []
     for book in BOOKS:
         if book.rating == rating:
+            result.append(book)
+    return result
+
+
+@app.get("/books-by-published-at")
+def get_books_by_published_at(published_at: int):
+    result = []
+    for book in BOOKS:
+        if book.published_at == published_at:
             result.append(book)
     return result
 

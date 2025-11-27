@@ -3,12 +3,18 @@ from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from models import Users
-from passlib.context import CryptContext
+from passlib.context import CryptContext  # bcrypt==4.0.1
 from database import SessionLocal
 from starlette import status
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm  # python-multipart
+from jose import jwt  # python-jose[cryptography]
+from datetime import timedelta, datetime, timezone
 
 router = APIRouter()
+
+# openssl rand -hex 32
+SECRET_KEY = "60ae50b9455c4e69c3e2814312720357118add5734b2e5be6de7479f58c3ea98"
+ALGORITHM = "HS256"
 
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -34,11 +40,25 @@ class UserRequest(BaseModel):
     role: str
 
 
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
 def authenticate_user(username: str, password: str, db: db_dependency) -> bool:
     user = db.query(Users).filter(Users.username == username).first()
     if not user:
         return False
-    return bcrypt_context.verify(password, user.hashed_password)
+    if not bcrypt_context.verify(password, user.hashed_password):
+        return False
+    return user
+
+
+def create_access_token(username: str, user_id: int, expires_delta: timedelta):
+    data = {"sub": username, "id": user_id}
+    expires = datetime.now(timezone.utc) + expires_delta
+    data.update({"exp": expires})
+    return jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
 
 
 @router.post("/auth", status_code=status.HTTP_201_CREATED)
@@ -57,11 +77,13 @@ async def create_user(db: db_dependency, user_request: UserRequest):
     db.commit()
 
 
-@router.post("/token")
+@router.post("/token", response_model=Token)
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: db_dependency
 ):
     user = authenticate_user(form_data.username, form_data.password, db)
     if not user:
         return "Failed"
-    return "Success"
+
+    token = create_access_token(user.username, user.id, timedelta(minutes=20))
+    return {"access_token": token, "token_type": "bearer"}
